@@ -98,8 +98,9 @@ label,
   color: var(--tenue);
 }
 
-input,
-select {
+input:not([type='checkbox']),
+select,
+textarea {
   width: 100%;
   padding: 10px 12px;
   font: inherit;
@@ -133,6 +134,7 @@ button:disabled {
 
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--acento);
   outline-offset: 2px;
@@ -279,6 +281,8 @@ button:focus-visible {
 
 .acciones {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: center;
 }
 
@@ -287,6 +291,127 @@ button:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
+}
+
+.centrado {
+  text-align: center;
+}
+
+.espectadores {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--tenue);
+}
+
+.casilla {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--acento);
+}
+
+.estimacion-final {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--borde);
+}
+
+.ficha {
+  min-width: 44px;
+  padding: 8px 10px;
+}
+
+.ficha.elegido {
+  color: var(--acento-texto);
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+.titulo-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.historias {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historias li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.historias li.actual {
+  border-color: var(--acento);
+  box-shadow: inset 3px 0 0 var(--acento);
+}
+
+.historia-titulo {
+  flex: 1 1 160px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.insignia {
+  min-width: 36px;
+  padding: 2px 8px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--fondo);
+  border-radius: 999px;
+}
+
+button.chico {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.agregar {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+textarea {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+}
+
+button.peligro {
+  align-self: flex-start;
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.nota {
+  margin: 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--tenue);
 }
 
 .naipe {

@@ -3,24 +3,40 @@
     "salas": {
       "$sala": {
         ".read": "auth != null",
+        ".write": "auth != null && !newData.exists() && (data.child('moderador').val() === auth.uid || !data.child('actividad').exists() || data.child('actividad').val() < now - 86400000)",
         "moderador": {
           ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
         },
-        "creadaEn": {
-          ".write": "auth != null && !data.exists()",
+        "actividad": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.val() === now"
         },
         "estado": {
           ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.val() === 'votando' || newData.val() === 'revelado'"
         },
-        "historia": {
-          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
-          ".validate": "newData.isString() && newData.val().length <= 200"
-        },
         "mazo": {
           ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.val() === 'fibonacci' || newData.val() === 'tallas' || newData.val() === 'potencias'"
+        },
+        "historiaActual": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          ".validate": "newData.isString() && newData.parent().child('historias').child(newData.val()).exists()"
+        },
+        "historias": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          "$historia": {
+            ".validate": "newData.hasChildren(['titulo'])",
+            "titulo": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+            },
+            "estimacion": {
+              ".validate": "newData.isString() && newData.val().length <= 4"
+            },
+            "$otro": {
+              ".validate": false
+            }
+          }
         },
         "participantes": {
           "$uid": {
@@ -30,6 +46,9 @@
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
             },
             "conectado": {
+              ".validate": "newData.isBoolean()"
+            },
+            "espectador": {
               ".validate": "newData.isBoolean()"
             },
             "$otro": {

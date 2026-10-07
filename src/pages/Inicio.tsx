@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MAZOS, MAZO_INICIAL, crearSala, guardarNombre, leerNombre, useUid } from '../sala'
+import { MAZOS, MAZO_INICIAL, crearSala, guardarNombre, leerNombre, limpiarSalasVencidas, useUid } from '../sala'
 import type { MazoId } from '../sala'
 
 export function SelectorMazo(props: { id: string; valor: MazoId; onCambio: (mazo: MazoId) => void }) {
@@ -24,6 +24,10 @@ export default function Inicio() {
   const [codigo, setCodigo] = useState('')
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (uid) void limpiarSalasVencidas()
+  }, [uid])
 
   const nombreValido = nombre.trim().length > 0
 
