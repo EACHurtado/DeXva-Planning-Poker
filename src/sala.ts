@@ -98,10 +98,12 @@ export function entrarSala(id: string, uid: string, nombre: string): () => void 
   const yo = child(refSala(id), `participantes/${uid}`)
   return onValue(ref(db, '.info/connected'), (snap) => {
     if (!snap.val()) return
-    onDisconnect(child(yo, 'conectado'))
-      .set(false)
+    // Se programa el registro completo: las reglas se validan al programarlo,
+    // y un `conectado` suelto no pasa mientras el participante aún no existe.
+    onDisconnect(yo)
+      .set({ nombre, conectado: false })
       .then(() => set(yo, { nombre, conectado: true }))
-      .catch(() => {})
+      .catch((e: Error) => console.error('No se pudo registrar la presencia', e))
   })
 }
 
