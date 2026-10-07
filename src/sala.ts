@@ -228,9 +228,16 @@ export function agregarHistorias(id: string, titulos: string[]) {
   return update(refSala(id), cambios)
 }
 
-/** Pone una historia en la mesa (o ninguna, con `null`) y abre una ronda limpia. */
-export function estimarHistoria(id: string, historiaId: string | null) {
-  return update(refSala(id), { historiaActual: historiaId, ...rondaNueva() })
+/**
+ * Pone una historia en la mesa y abre una ronda limpia. Si ya tenía una
+ * estimación se descarta: volver a estimarla exige confirmar un consenso nuevo.
+ */
+export function estimarHistoria(id: string, historiaId: string) {
+  return update(refSala(id), {
+    historiaActual: historiaId,
+    [`historias/${historiaId}/estimacion`]: null,
+    ...rondaNueva(),
+  })
 }
 
 export function guardarEstimacion(id: string, historiaId: string, estimacion: string | null) {
@@ -245,7 +252,14 @@ export function quitarHistoria(id: string, historiaId: string, esLaActual: boole
 }
 
 export interface Resumen {
-  promedio: number | null
+  /**
+   * Promedio de los votos llevado a una carta del mazo: la más cercana y, si
+   * queda justo entre dos, la más alta. En mazos no numéricos se promedia la
+   * posición de las cartas. `null` si nadie votó una carta estimable.
+   */
+  propuesta: string | null
+  /** El promedio exacto no era una carta del mazo y hubo que aproximarlo. */
+  aproximada: boolean
   /** Votos extremos según el orden del mazo, sin comodines; `null` si no hay. */
   minimo: string | null
   maximo: string | null
@@ -259,8 +273,6 @@ export interface Resumen {
 const esNumero = (texto: string) => texto.trim() !== '' && !Number.isNaN(Number(texto))
 
 export function resumir(votos: string[], cartas: readonly string[]): Resumen {
-  const numeros = votos.filter(esNumero).map(Number)
-  const promedio = numeros.length ? numeros.reduce((a, b) => a + b, 0) / numeros.length : null
   const consenso = votos.length > 1 && votos.every((v) => v === votos[0])
 
   const conteo = new Map<string, number>()
@@ -281,7 +293,23 @@ export function resumir(votos: string[], cartas: readonly string[]): Resumen {
   const minimo = ordenados[0] ?? null
   const maximo = ordenados[ordenados.length - 1] ?? null
 
-  return { promedio, minimo, maximo, consenso, distribucion, moda }
+  // Escala sobre la que se promedia: el valor de la carta, o su posición si el mazo no es numérico.
+  const estimables = cartas.filter((c) => !COMODINES.includes(c))
+  const numerico = estimables.every(esNumero)
+  const valor = (carta: string) => (numerico ? Number(carta) : estimables.indexOf(carta))
+  let propuesta: string | null = null
+  let aproximada = false
+  if (ordenados.length) {
+    const promedio = ordenados.reduce((suma, v) => suma + valor(v), 0) / ordenados.length
+    for (const carta of estimables) {
+      const mejor = propuesta === null ? Infinity : Math.abs(valor(propuesta) - promedio)
+      // `<=` para que, en un empate, gane la carta más alta.
+      if (Math.abs(valor(carta) - promedio) <= mejor) propuesta = carta
+    }
+    aproximada = propuesta !== null && valor(propuesta) !== promedio
+  }
+
+  return { propuesta, aproximada, minimo, maximo, consenso, distribucion, moda }
 }
 
 /** Suma de las estimaciones numéricas; `null` si ninguna lo es (p. ej. tallas). */

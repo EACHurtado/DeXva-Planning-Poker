@@ -105,12 +105,17 @@ export default function SalaPage() {
   const soyEspectador = !!sala.participantes?.[uid]?.espectador
 
   const votosVisibles = votantes.map(([pid]) => votos[pid]).filter((v) => v !== undefined)
-  const { promedio, minimo, maximo, consenso, distribucion, moda } = resumir(votosVisibles, cartas)
+  const { propuesta, aproximada, minimo, maximo, consenso, distribucion, moda } = resumir(votosVisibles, cartas)
 
-  const historias = Object.entries(sala.historias ?? {}).sort(([a], [b]) => a.localeCompare(b))
+  // Las claves de Firebase son cronológicas en orden de código de carácter;
+  // `localeCompare` las desordena porque ignora mayúsculas y símbolos.
+  const historias = Object.entries(sala.historias ?? {}).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
   const actualId = sala.historiaActual
   const actual = actualId ? sala.historias?.[actualId] : undefined
-  const siguiente = historias.find(([hid, h]) => hid !== actualId && !h.estimacion)
+  // La siguiente es la primera pendiente después de la que está en mesa; al llegar
+  // al final se vuelve a las pendientes que quedaron antes.
+  const pendientes = historias.filter(([hid, h]) => hid !== actualId && !h.estimacion)
+  const siguiente = pendientes.find(([hid]) => !actualId || hid > actualId) ?? pendientes[0]
   const total = totalEstimado(historias.map(([, h]) => h))
 
   async function copiarEnlace() {
@@ -190,12 +195,11 @@ export default function SalaPage() {
       {revelado && (
         <section className="tarjeta">
           <div className="resultado">
-            {promedio !== null && (
-              <div>
-                <span className="etiqueta">Promedio</span>
-                <strong>{promedio.toFixed(1)}</strong>
-              </div>
-            )}
+            <div>
+              <span className="etiqueta">Promedio</span>
+              <strong>{propuesta ?? '–'}</strong>
+              {aproximada && <small className="aproximacion">(con aproximación)</small>}
+            </div>
             <div>
               <span className="etiqueta">Más bajo</span>
               <strong>{minimo ?? '–'}</strong>
@@ -227,23 +231,34 @@ export default function SalaPage() {
               </li>
             ))}
           </ul>
-          {soyModerador && actualId && actual && (
+          {actualId && actual && (
             <div className="estimacion-final">
               <span className="etiqueta">Estimación final de la historia</span>
               <div className="mazo">
                 {cartas
                   .filter((carta) => !COMODINES.includes(carta))
                   .map((carta) => (
-                    <button
-                      key={carta}
-                      className={carta === actual.estimacion ? 'ficha elegido' : 'ficha'}
-                      aria-pressed={carta === actual.estimacion}
-                      onClick={() => void guardarEstimacion(id, actualId, carta === actual.estimacion ? null : carta)}
-                    >
+                    <span key={carta} className={carta === (actual.estimacion ?? propuesta) ? 'ficha elegido' : 'ficha'}>
                       {carta}
-                    </button>
+                    </span>
                   ))}
               </div>
+              {actual.estimacion ? (
+                <span className="consenso">Consenso confirmado: {actual.estimacion}</span>
+              ) : soyModerador ? (
+                <div className="acciones">
+                  <button
+                    className="primario"
+                    disabled={!propuesta}
+                    onClick={() => propuesta && void guardarEstimacion(id, actualId, propuesta)}
+                  >
+                    Hay consenso
+                  </button>
+                  <button onClick={() => void nuevaRonda(id)}>No hay consenso, votar de nuevo</button>
+                </div>
+              ) : (
+                <span className="bajada">Quien modera debe confirmar si hay consenso.</span>
+              )}
             </div>
           )}
         </section>
@@ -253,14 +268,18 @@ export default function SalaPage() {
         <section className="acciones">
           {revelado ? (
             <>
-              <button className={siguiente ? '' : 'primario'} onClick={() => void nuevaRonda(id)}>
-                Repetir ronda
-              </button>
-              {siguiente && (
+              {/* Con una historia en mesa la ronda se repite desde «No hay consenso». */}
+              {!actual && (
+                <button className={siguiente ? '' : 'primario'} onClick={() => void nuevaRonda(id)}>
+                  Nueva ronda
+                </button>
+              )}
+              {siguiente && (!actual || actual.estimacion) && (
                 <button className="primario" onClick={() => void estimarHistoria(id, siguiente[0])}>
                   Siguiente historia
                 </button>
               )}
+              {!siguiente && actual?.estimacion && <p className="bajada">Todas las historias están estimadas.</p>}
             </>
           ) : (
             <button className="primario" disabled={votosVisibles.length === 0} onClick={() => void revelar(id)}>

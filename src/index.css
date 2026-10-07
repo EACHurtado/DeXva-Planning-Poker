@@ -450,6 +450,17 @@ a:focus-visible {
 .ficha {
   min-width: 44px;
   padding: 8px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--tenue);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.aproximacion {
+  font-size: 0.7rem;
+  color: var(--tenue);
 }
 
 .casilla {
