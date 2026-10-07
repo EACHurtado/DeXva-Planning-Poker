@@ -543,6 +543,9 @@ button.peligro {
 /* Despedida al cerrar la sala */
 
 .despedida {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   inset: 0;
   max-width: none;
@@ -615,6 +618,118 @@ button.peligro {
   .despedida-tarjeta {
     animation: none;
   }
+}
+
+/* Resumen de la sesión */
+
+.resumen-titulo {
+  font-size: 1.6rem;
+}
+
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: calc(var(--radio) * 2);
+}
+
+.indicador strong {
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.indicador small {
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: var(--tenue);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grafico {
+  position: relative;
+}
+
+.grafico svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grafico-guia {
+  stroke: var(--borde);
+  stroke-width: 1;
+}
+
+.grafico-eje {
+  font-size: 11px;
+  fill: var(--tenue);
+}
+
+.grafico-linea {
+  fill: none;
+  stroke: var(--acento);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.grafico-punto {
+  fill: var(--acento);
+  stroke: var(--superficie);
+  stroke-width: 2;
+}
+
+.grafico-zona {
+  fill: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.grafico-zona:focus-visible {
+  stroke: var(--acento);
+  stroke-width: 1.5;
+}
+
+.grafico-globo {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 220px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  color: var(--tenue);
+  pointer-events: none;
+  background: var(--superficie-alta);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, calc(-100% - 12px));
+}
+
+.grafico-globo strong {
+  font-size: 1rem;
+  color: var(--texto);
+}
+
+.historia-numero {
+  min-width: 1.6em;
+  font-size: 0.8rem;
+  color: var(--tenue);
 }
 
 .nota {

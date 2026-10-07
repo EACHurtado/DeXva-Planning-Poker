@@ -12,6 +12,7 @@ Sitio: https://eachurtado.github.io/DeXva-Planning-Poker/
 - La moderadora elige el mazo (Fibonacci hasta 21, tallas o potencias de 2) al crear la sala; después no se puede cambiar.
 - La moderadora puede cargar una lista de historias (una por línea) y ponerlas en la mesa en orden.
 - El promedio se muestra llevado a una carta del mazo (la más cercana; en un empate, la más alta). Tras revelar, la moderadora confirma si hay consenso: si lo hay, esa carta queda como estimación de la historia; si no, se vota de nuevo.
+- Cuando todas las historias están estimadas, la moderadora elige entre seguir estimando o mostrar a todos el resumen de la sesión: cifras, evolución de las estimaciones y detalle por historia.
 - Cualquier participante puede marcar "Solo observar" para seguir la sesión sin votar.
 
 ## Qué se guarda y hasta cuándo

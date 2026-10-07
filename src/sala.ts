@@ -31,6 +31,8 @@ export interface Sala {
   moderador: string
   estado: Estado
   mazo?: MazoId
+  /** Quien modera puso la sala en modo resumen: todos ven el tablero de cierre. */
+  resumen?: boolean
   historiaActual?: string
   historias?: Record<string, Historia>
   participantes?: Record<string, Participante>
@@ -238,6 +240,10 @@ export function estimarHistoria(id: string, historiaId: string) {
     [`historias/${historiaId}/estimacion`]: null,
     ...rondaNueva(),
   })
+}
+
+export function mostrarResumen(id: string, visible: boolean) {
+  return set(child(refSala(id), 'resumen'), visible ? true : null)
 }
 
 export function guardarEstimacion(id: string, historiaId: string, estimacion: string | null) {

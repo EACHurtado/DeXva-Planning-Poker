@@ -19,6 +19,10 @@
           ".write": "auth != null && !data.exists() && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.val() === 'fibonacci' || newData.val() === 'tallas' || newData.val() === 'potencias'"
         },
+        "resumen": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          ".validate": "newData.isBoolean()"
+        },
         "historiaActual": {
           ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.isString() && newData.parent().child('historias').child(newData.val()).exists()"

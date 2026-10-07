@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Marca from '../Marca'
+import Resumen from '../Resumen'
 import {
   COMODINES,
   MAZOS,
@@ -15,6 +16,7 @@ import {
   guardarEstimacion,
   guardarNombre,
   leerNombre,
+  mostrarResumen,
   nuevaRonda,
   quitarHistoria,
   recordarVisita,
@@ -39,6 +41,8 @@ export default function SalaPage() {
   const [copiado, setCopiado] = useState(false)
 
   const [estuvoAbierta, setEstuvoAbierta] = useState(false)
+  const [avisoDescartado, setAvisoDescartado] = useState(false)
+  const cajaHistorias = useRef<HTMLTextAreaElement>(null)
 
   const existe = !!sala
   if (existe && !estuvoAbierta) setEstuvoAbierta(true)
@@ -118,6 +122,50 @@ export default function SalaPage() {
   const siguiente = pendientes.find(([hid]) => !actualId || hid > actualId) ?? pendientes[0]
   const total = totalEstimado(historias.map(([, h]) => h))
 
+  // El aviso de cierre vuelve a estar disponible cuando aparece una historia pendiente.
+  const todasEstimadas = historias.length > 0 && historias.every(([, h]) => h.estimacion)
+  if (!todasEstimadas && avisoDescartado) setAvisoDescartado(false)
+
+  function seguirEstimando() {
+    setAvisoDescartado(true)
+    if (sala?.resumen) void mostrarResumen(id, false)
+    // Deja el cursor listo para escribir las historias nuevas.
+    setTimeout(() => cajaHistorias.current?.focus(), 100)
+  }
+
+  const encabezado = (
+    <header className="encabezado">
+      <Link to="/" aria-label="DeXva Planning Poker, volver al inicio">
+        <Marca compacta />
+      </Link>
+      <div className="fila">
+        <span className="codigo">Sala {id}</span>
+        <button onClick={copiarEnlace}>{copiado ? 'Enlace copiado' : 'Copiar enlace'}</button>
+      </div>
+    </header>
+  )
+
+  if (sala.resumen) {
+    return (
+      <main className="sala">
+        {encabezado}
+        <Resumen
+          historias={historias.map(([, h]) => h)}
+          cartas={cartas}
+          participantes={Object.keys(sala.participantes ?? {}).length}
+        />
+        {soyModerador && (
+          <section className="acciones">
+            <button onClick={seguirEstimando}>Estimar más historias</button>
+            <button className="peligro" onClick={() => void cerrarSala(id)}>
+              Cerrar sala
+            </button>
+          </section>
+        )}
+      </main>
+    )
+  }
+
   async function copiarEnlace() {
     try {
       await navigator.clipboard.writeText(window.location.href)
@@ -149,15 +197,24 @@ export default function SalaPage() {
 
   return (
     <main className="sala">
-      <header className="encabezado">
-        <Link to="/" aria-label="DeXva Planning Poker, volver al inicio">
-          <Marca compacta />
-        </Link>
-        <div className="fila">
-          <span className="codigo">Sala {id}</span>
-          <button onClick={copiarEnlace}>{copiado ? 'Enlace copiado' : 'Copiar enlace'}</button>
+      {encabezado}
+
+      {soyModerador && todasEstimadas && !avisoDescartado && (
+        <div className="despedida" role="dialog" aria-modal="true" aria-labelledby="aviso-titulo">
+          <div className="despedida-tarjeta">
+            <p id="aviso-titulo" className="despedida-titulo">
+              Todas las historias están estimadas
+            </p>
+            <p className="bajada">¿Quieres estimar más historias o ver el resumen de la sesión?</p>
+            <div className="acciones">
+              <button onClick={seguirEstimando}>Estimar más historias</button>
+              <button className="primario" autoFocus onClick={() => void mostrarResumen(id, true)}>
+                Ver resumen
+              </button>
+            </div>
+          </div>
         </div>
-      </header>
+      )}
 
       <section className="tarjeta">
         <div className="titulo-seccion">
@@ -347,6 +404,7 @@ export default function SalaPage() {
         {soyModerador && (
           <form className="agregar" onSubmit={agregar}>
             <textarea
+              ref={cajaHistorias}
               rows={2}
               value={nuevasHistorias}
               placeholder="Nuevas historias, una por línea"
@@ -361,9 +419,14 @@ export default function SalaPage() {
       </section>
 
       {soyModerador && (
-        <button className="peligro" onClick={() => void cerrarSala(id)}>
-          Cerrar sala
-        </button>
+        <section className="acciones">
+          {historias.some(([, h]) => h.estimacion) && (
+            <button onClick={() => void mostrarResumen(id, true)}>Ver resumen</button>
+          )}
+          <button className="peligro" onClick={() => void cerrarSala(id)}>
+            Cerrar sala
+          </button>
+        </section>
       )}
     </main>
   )
