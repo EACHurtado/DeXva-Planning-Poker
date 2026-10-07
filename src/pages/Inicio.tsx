@@ -1,12 +1,26 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { crearSala, guardarNombre, leerNombre, useUid } from '../sala'
+import { MAZOS, MAZO_INICIAL, crearSala, guardarNombre, leerNombre, useUid } from '../sala'
+import type { MazoId } from '../sala'
+
+export function SelectorMazo(props: { id: string; valor: MazoId; onCambio: (mazo: MazoId) => void }) {
+  return (
+    <select id={props.id} value={props.valor} onChange={(e) => props.onCambio(e.target.value as MazoId)}>
+      {(Object.keys(MAZOS) as MazoId[]).map((clave) => (
+        <option key={clave} value={clave}>
+          {MAZOS[clave].nombre} ({MAZOS[clave].cartas.join(', ')})
+        </option>
+      ))}
+    </select>
+  )
+}
 
 export default function Inicio() {
   const navegar = useNavigate()
   const { uid, error: errorSesion } = useUid()
   const [nombre, setNombre] = useState(leerNombre)
+  const [mazo, setMazo] = useState<MazoId>(MAZO_INICIAL)
   const [codigo, setCodigo] = useState('')
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +34,7 @@ export default function Inicio() {
     setError(null)
     try {
       guardarNombre(nombre.trim())
-      const id = await crearSala(uid)
+      const id = await crearSala(uid, mazo)
       navegar(`/sala/${id}`)
     } catch {
       setError('No se pudo crear la sala. Intenta de nuevo en unos segundos.')
@@ -51,6 +65,8 @@ export default function Inicio() {
           placeholder="Cómo te verá el equipo"
           onChange={(e) => setNombre(e.target.value)}
         />
+        <label htmlFor="mazo">Mazo</label>
+        <SelectorMazo id="mazo" valor={mazo} onCambio={setMazo} />
         <button type="submit" className="primario" disabled={!uid || !nombreValido || creando}>
           {creando ? 'Creando…' : 'Crear sala'}
         </button>

@@ -14,11 +14,25 @@ export interface Sala {
   moderador: string
   estado: Estado
   historia?: string
+  mazo?: MazoId
   participantes?: Record<string, Participante>
   votos?: Record<string, string>
 }
 
-export const MAZO = ['0', '1', '2', '3', '5', '8', '13', '21', '34', '?', '☕']
+// Los identificadores están repetidos en la validación de database.rules.json.
+export const MAZOS = {
+  fibonacci: { nombre: 'Fibonacci', cartas: ['0', '1', '2', '3', '5', '8', '13', '21', '?', '☕'] },
+  tallas: { nombre: 'Tallas', cartas: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '?', '☕'] },
+  potencias: { nombre: 'Potencias de 2', cartas: ['1', '2', '4', '8', '16', '32', '?', '☕'] },
+} as const
+
+export type MazoId = keyof typeof MAZOS
+
+export const MAZO_INICIAL: MazoId = 'fibonacci'
+
+export function cartasDe(mazo: MazoId | undefined): readonly string[] {
+  return (MAZOS[mazo ?? MAZO_INICIAL] ?? MAZOS[MAZO_INICIAL]).cartas
+}
 
 const CLAVE_NOMBRE = 'planning-poker:nombre'
 // Sin caracteres que se confunden al dictar el código (0/O, 1/I/L).
@@ -82,15 +96,21 @@ export function useSala(id: string, uid: string | null): Sala | null | undefined
   return sala
 }
 
-export async function crearSala(uid: string): Promise<string> {
+export async function crearSala(uid: string, mazo: MazoId): Promise<string> {
   const id = nuevoId()
   await update(refSala(id), {
     moderador: uid,
     creadaEn: serverTimestamp(),
     estado: 'votando',
     historia: '',
+    mazo,
   })
   return id
+}
+
+/** Cambiar de mazo reinicia la ronda: los votos del mazo anterior ya no aplican. */
+export function cambiarMazo(id: string, mazo: MazoId) {
+  return update(refSala(id), { mazo, estado: 'votando', votos: null })
 }
 
 /** Registra la presencia; devuelve la función para dejar de escuchar. */
@@ -126,11 +146,28 @@ export function cambiarHistoria(id: string, historia: string) {
 export interface Resumen {
   promedio: number | null
   consenso: boolean
+  /** Cartas con al menos un voto, en el orden del mazo. */
+  distribucion: { carta: string; cantidad: number }[]
+  /** Cartas más votadas; vacío si no hay votos. */
+  moda: string[]
 }
 
-export function resumir(votos: string[]): Resumen {
+export function resumir(votos: string[], cartas: readonly string[]): Resumen {
   const numeros = votos.map(Number).filter((n, i) => votos[i].trim() !== '' && !Number.isNaN(n))
   const promedio = numeros.length ? numeros.reduce((a, b) => a + b, 0) / numeros.length : null
   const consenso = votos.length > 1 && votos.every((v) => v === votos[0])
-  return { promedio, consenso }
+
+  const conteo = new Map<string, number>()
+  for (const v of votos) conteo.set(v, (conteo.get(v) ?? 0) + 1)
+  const orden = (carta: string) => {
+    const i = cartas.indexOf(carta)
+    return i === -1 ? cartas.length : i
+  }
+  const distribucion = [...conteo]
+    .map(([carta, cantidad]) => ({ carta, cantidad }))
+    .sort((a, b) => orden(a.carta) - orden(b.carta))
+  const maximo = Math.max(0, ...distribucion.map((d) => d.cantidad))
+  const moda = distribucion.filter((d) => d.cantidad === maximo).map((d) => d.carta)
+
+  return { promedio, consenso, distribucion, moda }
 }

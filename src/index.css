@@ -98,7 +98,8 @@ label,
   color: var(--tenue);
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 10px 12px;
   font: inherit;
@@ -131,6 +132,7 @@ button:disabled {
 }
 
 input:focus-visible,
+select:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--acento);
   outline-offset: 2px;
@@ -211,7 +213,49 @@ button:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.distribucion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.distribucion li {
+  display: grid;
+  grid-template-columns: 40px 1fr 64px;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.dist-carta {
+  font-weight: 700;
+  text-align: right;
+}
+
+.dist-barra {
+  height: 10px;
+  background: var(--fondo);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.dist-barra span {
+  display: block;
+  height: 100%;
+  background: var(--acento);
+  border-radius: 5px;
+}
+
+.dist-cantidad {
+  color: var(--tenue);
+}
+
 .resultado {
+  display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   gap: 32px;
   align-items: center;

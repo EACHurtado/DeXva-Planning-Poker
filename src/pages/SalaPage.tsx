@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { SelectorMazo } from './Inicio'
 import {
-  MAZO,
+  MAZO_INICIAL,
   cambiarHistoria,
+  cambiarMazo,
+  cartasDe,
   entrarSala,
   guardarNombre,
   leerNombre,
@@ -72,7 +75,8 @@ export default function SalaPage() {
     .filter(([, p]) => p.conectado)
     .sort(([, a], [, b]) => a.nombre.localeCompare(b.nombre))
   const votosVisibles = participantes.map(([pid]) => votos[pid]).filter((v) => v !== undefined)
-  const { promedio, consenso } = resumir(votosVisibles)
+  const cartas = cartasDe(sala.mazo)
+  const { promedio, consenso, distribucion, moda } = resumir(votosVisibles, cartas)
   const historia = sala.historia ?? ''
 
   async function copiarEnlace() {
@@ -118,6 +122,16 @@ export default function SalaPage() {
         ) : (
           <p className="historia">{historia || 'El moderador aún no define la historia.'}</p>
         )}
+        {soyModerador && (
+          <>
+            <label htmlFor="mazo">Mazo (al cambiarlo se reinicia la ronda)</label>
+            <SelectorMazo
+              id="mazo"
+              valor={sala.mazo ?? MAZO_INICIAL}
+              onCambio={(mazo) => void cambiarMazo(id, mazo)}
+            />
+          </>
+        )}
       </section>
 
       <section className="mesa">
@@ -138,16 +152,37 @@ export default function SalaPage() {
       </section>
 
       {revelado && (
-        <section className="tarjeta resultado">
-          <div>
-            <span className="etiqueta">Promedio</span>
-            <strong>{promedio === null ? '–' : promedio.toFixed(1)}</strong>
+        <section className="tarjeta">
+          <div className="resultado">
+            {promedio !== null && (
+              <div>
+                <span className="etiqueta">Promedio</span>
+                <strong>{promedio.toFixed(1)}</strong>
+              </div>
+            )}
+            <div>
+              <span className="etiqueta">Más votada</span>
+              <strong>{moda.join(' · ') || '–'}</strong>
+            </div>
+            <div>
+              <span className="etiqueta">Votos</span>
+              <strong>{votosVisibles.length}</strong>
+            </div>
+            {consenso && <span className="consenso">¡Consenso!</span>}
           </div>
-          <div>
-            <span className="etiqueta">Votos</span>
-            <strong>{votosVisibles.length}</strong>
-          </div>
-          {consenso && <span className="consenso">¡Consenso!</span>}
+          <ul className="distribucion" aria-label="Distribución de votos">
+            {distribucion.map(({ carta, cantidad }) => (
+              <li key={carta}>
+                <span className="dist-carta">{carta}</span>
+                <span className="dist-barra">
+                  <span style={{ width: `${(cantidad / votosVisibles.length) * 100}%` }} />
+                </span>
+                <span className="dist-cantidad">
+                  {cantidad} {cantidad === 1 ? 'voto' : 'votos'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
@@ -166,7 +201,7 @@ export default function SalaPage() {
       )}
 
       <section className="mazo" aria-label="Tu voto">
-        {MAZO.map((carta) => (
+        {cartas.map((carta) => (
           <button
             key={carta}
             className={carta === miVoto ? 'naipe elegido' : 'naipe'}
