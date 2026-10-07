@@ -1,0 +1,49 @@
+{
+  "rules": {
+    "salas": {
+      "$sala": {
+        ".read": "auth != null",
+        "moderador": {
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+        },
+        "creadaEn": {
+          ".write": "auth != null && !data.exists()",
+          ".validate": "newData.val() === now"
+        },
+        "estado": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          ".validate": "newData.val() === 'votando' || newData.val() === 'revelado'"
+        },
+        "historia": {
+          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "participantes": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('salas').child($sala).child('moderador').exists()",
+            ".validate": "newData.hasChildren(['nombre', 'conectado'])",
+            "nombre": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+            },
+            "conectado": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$otro": {
+              ".validate": false
+            }
+          }
+        },
+        "votos": {
+          ".write": "auth != null && root.child('salas').child($sala).child('moderador').val() === auth.uid",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('salas').child($sala).child('estado').val() === 'votando'",
+            ".validate": "newData.isString() && newData.val().length <= 4"
+          }
+        },
+        "$otro": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

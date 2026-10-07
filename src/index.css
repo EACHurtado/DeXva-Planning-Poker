@@ -1,0 +1,260 @@
+:root {
+  --fondo: #f4f6fb;
+  --superficie: #ffffff;
+  --texto: #1a2233;
+  --tenue: #63708a;
+  --borde: #d9dfec;
+  --acento: #3b5bdb;
+  --acento-texto: #ffffff;
+  --exito: #2b8a3e;
+  --error: #c92a2a;
+
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #12151c;
+    --superficie: #1c212c;
+    --texto: #e8ecf5;
+    --tenue: #97a3ba;
+    --borde: #2e3646;
+    --acento: #748ffc;
+    --acento-texto: #10131a;
+    --exito: #69db7c;
+    --error: #ff8787;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fondo);
+}
+
+main {
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inicio {
+  max-width: 420px;
+  padding-top: 12vh;
+}
+
+.sala {
+  max-width: 880px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+a {
+  color: var(--acento);
+}
+
+.bajada {
+  margin: 0;
+  color: var(--tenue);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+.fila {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fila input {
+  flex: 1;
+  min-width: 0;
+}
+
+label,
+.etiqueta {
+  font-size: 0.85rem;
+  color: var(--tenue);
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+button {
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button.primario {
+  color: var(--acento-texto);
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.error {
+  margin: 0;
+  color: var(--error);
+}
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.marca {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.codigo {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.historia {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.mesa {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.puesto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 88px;
+}
+
+.carta {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 80px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px dashed var(--borde);
+  border-radius: 10px;
+}
+
+.carta.votada {
+  color: var(--acento-texto);
+  background: var(--acento);
+  border: 2px solid var(--acento);
+}
+
+.carta.revelada {
+  color: var(--texto);
+  background: var(--superficie);
+  border: 2px solid var(--acento);
+}
+
+.nombre {
+  font-size: 0.85rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.resultado {
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultado div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resultado strong {
+  font-size: 1.8rem;
+}
+
+.consenso {
+  font-weight: 700;
+  color: var(--exito);
+}
+
+.acciones {
+  display: flex;
+  justify-content: center;
+}
+
+.mazo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.naipe {
+  width: 52px;
+  height: 72px;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.naipe.elegido {
+  color: var(--acento-texto);
+  background: var(--acento);
+  border-color: var(--acento);
+  transform: translateY(-6px);
+}
