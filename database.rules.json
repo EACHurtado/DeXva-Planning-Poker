@@ -16,7 +16,7 @@
           ".validate": "newData.val() === 'votando' || newData.val() === 'revelado'"
         },
         "mazo": {
-          ".write": "auth != null && newData.parent().child('moderador').val() === auth.uid",
+          ".write": "auth != null && !data.exists() && newData.parent().child('moderador').val() === auth.uid",
           ".validate": "newData.val() === 'fibonacci' || newData.val() === 'tallas' || newData.val() === 'potencias'"
         },
         "historiaActual": {

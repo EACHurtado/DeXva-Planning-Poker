@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Marca from '../Marca'
 import { MAZOS, MAZO_INICIAL, crearSala, guardarNombre, leerNombre, limpiarSalasVencidas, useUid } from '../sala'
 import type { MazoId } from '../sala'
 
@@ -56,7 +57,10 @@ export default function Inicio() {
 
   return (
     <main className="inicio">
-      <h1>DeXva Planning Poker</h1>
+      <Marca />
+      <h1>
+        Tu próxima estimación. <em>Un acuerdo de equipo.</em>
+      </h1>
       <p className="bajada">Estima en equipo, en tiempo real y sin registrarte.</p>
 
       <form className="tarjeta" onSubmit={crear}>
@@ -69,7 +73,7 @@ export default function Inicio() {
           placeholder="Cómo te verá el equipo"
           onChange={(e) => setNombre(e.target.value)}
         />
-        <label htmlFor="mazo">Mazo</label>
+        <label htmlFor="mazo">Mazo (no se puede cambiar después)</label>
         <SelectorMazo id="mazo" valor={mazo} onCambio={setMazo} />
         <button type="submit" className="primario" disabled={!uid || !nombreValido || creando}>
           {creando ? 'Creando…' : 'Crear sala'}
@@ -93,6 +97,13 @@ export default function Inicio() {
       </form>
 
       {(error ?? errorSesion) && <p className="error">{error ?? 'No se pudo conectar con el servidor.'}</p>}
+
+      <p className="pie">
+        Una herramienta de{' '}
+        <a href="https://dexvagroup.com/" target="_blank" rel="noreferrer">
+          DeXva Group
+        </a>
+      </p>
     </main>
   )
 }

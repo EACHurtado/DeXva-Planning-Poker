@@ -221,11 +221,6 @@ export function nuevaRonda(id: string) {
   return update(refSala(id), rondaNueva())
 }
 
-/** Cambiar de mazo reinicia la ronda: los votos del mazo anterior ya no aplican. */
-export function cambiarMazo(id: string, mazo: MazoId) {
-  return update(refSala(id), { mazo, ...rondaNueva() })
-}
-
 export function agregarHistorias(id: string, titulos: string[]) {
   const historias = child(refSala(id), 'historias')
   const cambios: Record<string, Historia> = {}

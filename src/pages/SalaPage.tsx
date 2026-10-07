@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { SelectorMazo } from './Inicio'
+import Marca from '../Marca'
 import {
   COMODINES,
+  MAZOS,
   MAZO_INICIAL,
   agregarHistorias,
   cambiarEspectador,
-  cambiarMazo,
   cartasDe,
   cerrarSala,
   entrarSala,
@@ -136,8 +136,8 @@ export default function SalaPage() {
   return (
     <main className="sala">
       <header className="encabezado">
-        <Link to="/" className="marca">
-          DeXva Planning Poker
+        <Link to="/" aria-label="DeXva Planning Poker, volver al inicio">
+          <Marca compacta />
         </Link>
         <div className="fila">
           <span className="codigo">Sala {id}</span>
@@ -146,7 +146,10 @@ export default function SalaPage() {
       </header>
 
       <section className="tarjeta">
-        <span className="etiqueta">Historia en estimación</span>
+        <div className="titulo-seccion">
+          <span className="etiqueta">Historia en estimación</span>
+          <span className="etiqueta">Mazo: {MAZOS[sala.mazo ?? MAZO_INICIAL].nombre}</span>
+        </div>
         <p className="historia">{actual ? actual.titulo : 'Ronda libre, sin historia asignada.'}</p>
       </section>
 
@@ -322,13 +325,9 @@ export default function SalaPage() {
       </section>
 
       {soyModerador && (
-        <section className="tarjeta">
-          <label htmlFor="mazo">Mazo (al cambiarlo se reinicia la ronda)</label>
-          <SelectorMazo id="mazo" valor={sala.mazo ?? MAZO_INICIAL} onCambio={(mazo) => void cambiarMazo(id, mazo)} />
-          <button className="peligro" onClick={() => void cerrar()}>
-            Cerrar sala y borrar sus datos
-          </button>
-        </section>
+        <button className="peligro" onClick={() => void cerrar()}>
+          Cerrar sala y borrar sus datos
+        </button>
       )}
 
       <p className="nota">

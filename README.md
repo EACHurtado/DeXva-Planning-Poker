@@ -9,7 +9,7 @@ Sitio: https://eachurtado.github.io/DeXva-Planning-Poker/
 - Una persona crea la sala y queda como moderadora; comparte el enlace o el código.
 - Cada participante entra con su nombre y elige una carta. Los votos se muestran ocultos hasta que la moderadora los revela.
 - Al revelar se ven los votos, el promedio, la carta más votada, la distribución y si hubo consenso. "Nueva ronda" limpia los votos.
-- La moderadora elige el mazo (Fibonacci hasta 21, tallas o potencias de 2) al crear la sala o durante la sesión; cambiarlo reinicia la ronda.
+- La moderadora elige el mazo (Fibonacci hasta 21, tallas o potencias de 2) al crear la sala; después no se puede cambiar.
 
 - La moderadora puede cargar una lista de historias (una por línea), ponerlas en la mesa en orden y guardar la estimación final de cada una.
 - Cualquier participante puede marcar "Solo observar" para seguir la sesión sin votar.
