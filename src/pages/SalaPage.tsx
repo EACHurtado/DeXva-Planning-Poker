@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Marca from '../Marca'
 import {
   COMODINES,
+  DECISIONES,
+  DECISION_INICIAL,
   MAZOS,
   MAZO_INICIAL,
   agregarHistorias,
@@ -91,7 +93,8 @@ export default function SalaPage() {
   const soyEspectador = !!sala.participantes?.[uid]?.espectador
 
   const votosVisibles = votantes.map(([pid]) => votos[pid]).filter((v) => v !== undefined)
-  const { promedio, consenso, distribucion, moda } = resumir(votosVisibles, cartas)
+  const decision = sala.decision ?? DECISION_INICIAL
+  const { promedio, p85, consenso, distribucion, moda } = resumir(votosVisibles, cartas)
 
   const historias = Object.entries(sala.historias ?? {}).sort(([a], [b]) => a.localeCompare(b))
   const actualId = sala.historiaActual
@@ -148,7 +151,9 @@ export default function SalaPage() {
       <section className="tarjeta">
         <div className="titulo-seccion">
           <span className="etiqueta">Historia en estimación</span>
-          <span className="etiqueta">Mazo: {MAZOS[sala.mazo ?? MAZO_INICIAL].nombre}</span>
+          <span className="etiqueta">
+            Mazo: {MAZOS[sala.mazo ?? MAZO_INICIAL].nombre} · Decisión: {DECISIONES[decision].nombre}
+          </span>
         </div>
         <p className="historia">{actual ? actual.titulo : 'Ronda libre, sin historia asignada.'}</p>
       </section>
@@ -181,11 +186,18 @@ export default function SalaPage() {
       {revelado && (
         <section className="tarjeta">
           <div className="resultado">
-            {promedio !== null && (
+            {decision === 'p85' ? (
               <div>
-                <span className="etiqueta">Promedio</span>
-                <strong>{promedio.toFixed(1)}</strong>
+                <span className="etiqueta">P85</span>
+                <strong>{p85 ?? '–'}</strong>
               </div>
+            ) : (
+              promedio !== null && (
+                <div>
+                  <span className="etiqueta">Promedio</span>
+                  <strong>{promedio.toFixed(1)}</strong>
+                </div>
+              )
             )}
             <div>
               <span className="etiqueta">Más votada</span>
@@ -329,10 +341,6 @@ export default function SalaPage() {
           Cerrar sala y borrar sus datos
         </button>
       )}
-
-      <p className="nota">
-        Una sala sin actividad por 24 horas se elimina cuando alguno de sus participantes vuelve a abrir el sitio.
-      </p>
     </main>
   )
 }

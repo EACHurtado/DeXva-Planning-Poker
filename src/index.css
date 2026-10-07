@@ -60,8 +60,29 @@ h1 {
 }
 
 h1 em {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.68em;
   font-style: normal;
+  letter-spacing: -0.03em;
   color: var(--acento);
+}
+
+.portada {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+}
+
+.portada .marca {
+  align-items: center;
+}
+
+/* El espaciado entre letras deja un hueco a la derecha que descentra el texto. */
+.portada .marca-producto {
+  margin-right: -0.42em;
 }
 
 a {

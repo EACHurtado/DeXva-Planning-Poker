@@ -2,8 +2,18 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Marca from '../Marca'
-import { MAZOS, MAZO_INICIAL, crearSala, guardarNombre, leerNombre, limpiarSalasVencidas, useUid } from '../sala'
-import type { MazoId } from '../sala'
+import {
+  DECISIONES,
+  DECISION_INICIAL,
+  MAZOS,
+  MAZO_INICIAL,
+  crearSala,
+  guardarNombre,
+  leerNombre,
+  limpiarSalasVencidas,
+  useUid,
+} from '../sala'
+import type { DecisionId, MazoId } from '../sala'
 
 export function SelectorMazo(props: { id: string; valor: MazoId; onCambio: (mazo: MazoId) => void }) {
   return (
@@ -22,6 +32,7 @@ export default function Inicio() {
   const { uid, error: errorSesion } = useUid()
   const [nombre, setNombre] = useState(leerNombre)
   const [mazo, setMazo] = useState<MazoId>(MAZO_INICIAL)
+  const [decision, setDecision] = useState<DecisionId>(DECISION_INICIAL)
   const [codigo, setCodigo] = useState('')
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +50,7 @@ export default function Inicio() {
     setError(null)
     try {
       guardarNombre(nombre.trim())
-      const id = await crearSala(uid, mazo)
+      const id = await crearSala(uid, mazo, decision)
       navegar(`/sala/${id}`)
     } catch {
       setError('No se pudo crear la sala. Intenta de nuevo en unos segundos.')
@@ -57,11 +68,13 @@ export default function Inicio() {
 
   return (
     <main className="inicio">
-      <Marca />
-      <h1>
-        Tu próxima estimación. <em>Un acuerdo de equipo.</em>
-      </h1>
-      <p className="bajada">Estima en equipo, en tiempo real y sin registrarte.</p>
+      <div className="portada">
+        <Marca />
+        <h1>
+          Que la estimación <em>sea un acuerdo de equipo.</em>
+        </h1>
+        <p className="bajada">Estima en equipo, en tiempo real y sin registrarte.</p>
+      </div>
 
       <form className="tarjeta" onSubmit={crear}>
         <label htmlFor="nombre">Tu nombre</label>
@@ -75,6 +88,14 @@ export default function Inicio() {
         />
         <label htmlFor="mazo">Mazo (no se puede cambiar después)</label>
         <SelectorMazo id="mazo" valor={mazo} onCambio={setMazo} />
+        <label htmlFor="decision">Tipo de decisión</label>
+        <select id="decision" value={decision} onChange={(e) => setDecision(e.target.value as DecisionId)}>
+          {(Object.keys(DECISIONES) as DecisionId[]).map((clave) => (
+            <option key={clave} value={clave}>
+              {DECISIONES[clave].nombre}: {DECISIONES[clave].detalle}
+            </option>
+          ))}
+        </select>
         <button type="submit" className="primario" disabled={!uid || !nombreValido || creando}>
           {creando ? 'Creando…' : 'Crear sala'}
         </button>
