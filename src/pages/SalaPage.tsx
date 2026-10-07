@@ -26,6 +26,8 @@ import {
   votar,
 } from '../sala'
 
+const DESPEDIDA_MS = 3500
+
 export default function SalaPage() {
   const { id = '' } = useParams()
   const navegar = useNavigate()
@@ -36,7 +38,12 @@ export default function SalaPage() {
   const [nuevasHistorias, setNuevasHistorias] = useState('')
   const [copiado, setCopiado] = useState(false)
 
+  const [estuvoAbierta, setEstuvoAbierta] = useState(false)
+
   const existe = !!sala
+  if (existe && !estuvoAbierta) setEstuvoAbierta(true)
+  // La sala se cerró mientras esta persona estaba dentro (la cerró ella o quien modera).
+  const despedida = sala === null && estuvoAbierta
 
   useEffect(() => {
     if (!uid || !nombre || !existe) return
@@ -44,6 +51,13 @@ export default function SalaPage() {
     return entrarSala(id, uid, nombre)
   }, [id, uid, nombre, existe])
 
+  useEffect(() => {
+    if (!despedida) return
+    const reloj = setTimeout(() => navegar('/'), DESPEDIDA_MS)
+    return () => clearTimeout(reloj)
+  }, [despedida, navegar])
+
+  if (despedida) return <Despedida />
   if (errorSesion) return <Aviso texto="No se pudo conectar con el servidor." />
   if (sala === undefined || !uid) return <Aviso texto="Cargando sala…" />
   if (sala === null) return <Aviso texto={`La sala ${id} no existe o ya fue cerrada.`} />
@@ -127,11 +141,6 @@ export default function SalaPage() {
     setNuevasHistorias('')
   }
 
-  async function cerrar() {
-    if (!window.confirm('¿Cerrar la sala? Se borrarán las historias, los votos y los participantes.')) return
-    await cerrarSala(id)
-    navegar('/')
-  }
 
   return (
     <main className="sala">
@@ -333,10 +342,23 @@ export default function SalaPage() {
       </section>
 
       {soyModerador && (
-        <button className="peligro" onClick={() => void cerrar()}>
+        <button className="peligro" onClick={() => void cerrarSala(id)}>
           Cerrar sala
         </button>
       )}
+    </main>
+  )
+}
+
+function Despedida() {
+  return (
+    <main className="despedida" role="status">
+      <div className="despedida-tarjeta">
+        <Marca />
+        <p className="despedida-titulo">¡Gracias por usar DeXva Planning Poker!</p>
+        <p className="bajada">La sala se cerró y sus datos fueron eliminados.</p>
+        <span className="despedida-barra" style={{ animationDuration: `${DESPEDIDA_MS}ms` }} />
+      </div>
     </main>
   )
 }

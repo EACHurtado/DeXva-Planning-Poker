@@ -529,6 +529,83 @@ button.peligro {
   border-color: var(--error);
 }
 
+/* Despedida al cerrar la sala */
+
+.despedida {
+  position: fixed;
+  inset: 0;
+  max-width: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 12, 16, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.despedida-tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  width: min(100%, 420px);
+  padding: 32px 24px 36px;
+  text-align: center;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-top: 2px solid var(--oro);
+  border-radius: calc(var(--radio) * 2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: despedida-entra 0.35s ease-out;
+}
+
+.despedida-tarjeta .marca {
+  align-items: center;
+}
+
+.despedida-tarjeta .marca-producto {
+  margin-right: -0.42em;
+}
+
+.despedida-titulo {
+  margin: 4px 0 0;
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.despedida-barra {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--acento);
+  transform-origin: left;
+  animation: despedida-tiempo linear forwards;
+}
+
+@keyframes despedida-entra {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+@keyframes despedida-tiempo {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .despedida-tarjeta {
+    animation: none;
+  }
+}
+
 .nota {
   margin: 0;
   font-size: 0.75rem;
