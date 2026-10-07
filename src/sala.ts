@@ -31,7 +31,6 @@ export interface Sala {
   moderador: string
   estado: Estado
   mazo?: MazoId
-  decision?: DecisionId
   historiaActual?: string
   historias?: Record<string, Historia>
   participantes?: Record<string, Participante>
@@ -48,16 +47,6 @@ export const MAZOS = {
 export type MazoId = keyof typeof MAZOS
 
 export const MAZO_INICIAL: MazoId = 'fibonacci'
-
-// Cómo se resume la ronda al revelar. Los identificadores están repetidos en database.rules.json.
-export const DECISIONES = {
-  promedio: { nombre: 'Promedio', detalle: 'media de los votos numéricos' },
-  p85: { nombre: 'P85', detalle: 'carta que cubre al 85 % de los votos' },
-} as const
-
-export type DecisionId = keyof typeof DECISIONES
-
-export const DECISION_INICIAL: DecisionId = 'promedio'
 
 /** Cartas que no son una estimación: no cuentan como valor final de una historia. */
 export const COMODINES = ['?', '☕']
@@ -135,14 +124,13 @@ export function useSala(id: string, uid: string | null): Sala | null | undefined
   return sala
 }
 
-export async function crearSala(uid: string, mazo: MazoId, decision: DecisionId): Promise<string> {
+export async function crearSala(uid: string, mazo: MazoId): Promise<string> {
   const id = nuevoId()
   await update(refSala(id), {
     moderador: uid,
     actividad: serverTimestamp(),
     estado: 'votando',
     mazo,
-    decision,
   })
   return id
 }
@@ -258,12 +246,9 @@ export function quitarHistoria(id: string, historiaId: string, esLaActual: boole
 
 export interface Resumen {
   promedio: number | null
-  /**
-   * Percentil 85 por rango más cercano, según el orden del mazo: la carta más
-   * baja que iguala o supera al 85 % de los votos. Ignora los comodines, y al
-   * ser una carta del mazo también sirve para mazos no numéricos.
-   */
-  p85: string | null
+  /** Votos extremos según el orden del mazo, sin comodines; `null` si no hay. */
+  minimo: string | null
+  maximo: string | null
   consenso: boolean
   /** Cartas con al menos un voto, en el orden del mazo. */
   distribucion: { carta: string; cantidad: number }[]
@@ -287,15 +272,16 @@ export function resumir(votos: string[], cartas: readonly string[]): Resumen {
   const distribucion = [...conteo]
     .map(([carta, cantidad]) => ({ carta, cantidad }))
     .sort((a, b) => orden(a.carta) - orden(b.carta))
-  const maximo = Math.max(0, ...distribucion.map((d) => d.cantidad))
-  const moda = distribucion.filter((d) => d.cantidad === maximo).map((d) => d.carta)
+  const masVotos = Math.max(0, ...distribucion.map((d) => d.cantidad))
+  const moda = distribucion.filter((d) => d.cantidad === masVotos).map((d) => d.carta)
 
   const ordenados = votos
     .filter((v) => !COMODINES.includes(v) && cartas.includes(v))
     .sort((a, b) => orden(a) - orden(b))
-  const p85 = ordenados.length ? ordenados[Math.ceil(0.85 * ordenados.length) - 1] : null
+  const minimo = ordenados[0] ?? null
+  const maximo = ordenados[ordenados.length - 1] ?? null
 
-  return { promedio, p85, consenso, distribucion, moda }
+  return { promedio, minimo, maximo, consenso, distribucion, moda }
 }
 
 /** Suma de las estimaciones numéricas; `null` si ninguna lo es (p. ej. tallas). */
