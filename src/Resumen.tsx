@@ -73,6 +73,7 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
       <h1 className="resumen-titulo">Resumen de la sesión</h1>
 
       <section className="indicadores">
+        <Indicador etiqueta="Participantes" valor={String(participantes)} />
         <Indicador etiqueta="Ítems estimados" valor={String(estimadas.length)} detalle={`de ${historias.length}`} />
         <Indicador etiqueta="Puntuación más alta" valor={masAlta?.valor ?? '–'} detalle={masAlta?.titulo} />
         <Indicador etiqueta="Puntuación más baja" valor={masBaja?.valor ?? '–'} detalle={masBaja?.titulo} />
@@ -82,7 +83,6 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
           detalle={masAlta && masBaja ? `entre ${masBaja.valor} y ${masAlta.valor}` : undefined}
         />
         <Indicador etiqueta="P85" valor={p85?.valor ?? '–'} detalle={p85 ? `85 % de los ítems en ${p85.valor} o menos` : undefined} />
-        <Indicador etiqueta="Participantes" valor={String(participantes)} />
       </section>
 
       {tipos.length > 0 && (

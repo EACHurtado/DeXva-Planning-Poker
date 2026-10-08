@@ -657,10 +657,23 @@ button.peligro {
   font-size: 1.6rem;
 }
 
+/* Los seis indicadores van en una sola fila; en pantallas angostas se reparten en filas iguales. */
 .indicadores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .indicadores {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .indicador {
@@ -668,14 +681,21 @@ button.peligro {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  padding: 16px;
+  padding: 14px 12px;
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: calc(var(--radio) * 2);
 }
 
+.indicador .etiqueta {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  /* Reserva dos líneas para que los valores queden alineados entre tarjetas. */
+  min-height: 2.9em;
+}
+
 .indicador strong {
-  font-size: 2.2rem;
+  font-size: 1.9rem;
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.03em;
