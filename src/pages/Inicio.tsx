@@ -101,7 +101,7 @@ export default function Inicio() {
       {(error ?? errorSesion) && <p className="error">{error ?? 'No se pudo conectar con el servidor.'}</p>}
 
       <p className="pie">
-        <a href="https://herramientas.dexvagroup.com/">Más herramientas gratuitas</a> · Una herramienta de{' '}
+        <a href="https://dexvagroup.com/herramientas/">Más herramientas gratuitas</a> · Una herramienta de{' '}
         <a href="https://dexvagroup.com/" target="_blank" rel="noreferrer">
           DeXva Group
         </a>
