@@ -10,9 +10,9 @@ Sitio: https://eachurtado.github.io/DeXva-Planning-Poker/
 - Cada participante entra con su nombre y elige una carta. Los votos se muestran ocultos hasta que la moderadora los revela.
 - Al revelar se ven los votos, el promedio, el voto más bajo y el más alto, la carta más votada, la distribución y si hubo consenso. "Nueva ronda" limpia los votos.
 - La moderadora elige el mazo (Fibonacci hasta 21, tallas o potencias de 2) al crear la sala; después no se puede cambiar.
-- La moderadora puede cargar una lista de historias (una por línea) y ponerlas en la mesa en orden.
+- Lo que se estima son ítems de backlog. La moderadora los carga en lista (uno por línea) indicando su tipo (historia de usuario, habilitador, bug, deuda técnica, mejora u otro) y los pone en la mesa en orden.
 - El promedio se muestra llevado a una carta del mazo (la más cercana; en un empate, la más alta). Tras revelar, la moderadora confirma si hay consenso: si lo hay, esa carta queda como estimación de la historia; si no, se vota de nuevo.
-- Cuando todas las historias están estimadas, la moderadora elige entre seguir estimando o mostrar a todos el resumen de la sesión: cifras, evolución de las estimaciones y detalle por historia.
+- Cuando todas las historias están estimadas, la moderadora elige entre seguir estimando o mostrar a todos el resumen de la sesión: cifras (incluidas la variabilidad entre la estimación más baja y la más alta, y el P85), cantidad de ítems por tipo, evolución de las estimaciones y detalle por ítem.
 - Cualquier participante puede marcar "Solo observar" para seguir la sesión sin votar.
 
 ## Qué se guarda y hasta cuándo

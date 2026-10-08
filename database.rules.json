@@ -34,6 +34,9 @@
             "titulo": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
             },
+            "tipo": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+            },
             "estimacion": {
               ".validate": "newData.isString() && newData.val().length <= 4"
             },

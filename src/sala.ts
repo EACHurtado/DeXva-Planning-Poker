@@ -22,8 +22,27 @@ export interface Participante {
   espectador?: boolean
 }
 
+// Tipos de ítem de backlog que se pueden estimar. «Otro» pide un texto libre.
+export const TIPO_OTRO = 'Otro'
+export const TIPOS_ITEM = [
+  'Historia de Usuario',
+  'Habilitador Exploratorio',
+  'Habilitador Técnico/Arquitectónico',
+  'Habilitador de Cumplimiento',
+  'Bugs',
+  'Deuda Técnica',
+  'Mejora del Producto',
+  'Mejora del Proceso',
+  'Mejora de las Interacciones',
+  TIPO_OTRO,
+]
+/** Cómo se nombra un ítem agregado antes de que existieran los tipos. */
+export const SIN_TIPO = 'Sin tipo'
+
+/** Un ítem de backlog. El nombre viene de cuando solo se estimaban historias. */
 export interface Historia {
   titulo: string
+  tipo?: string
   estimacion?: string
 }
 
@@ -223,10 +242,10 @@ export function nuevaRonda(id: string) {
   return update(refSala(id), rondaNueva())
 }
 
-export function agregarHistorias(id: string, titulos: string[]) {
+export function agregarHistorias(id: string, titulos: string[], tipo: string) {
   const historias = child(refSala(id), 'historias')
   const cambios: Record<string, Historia> = {}
-  for (const titulo of titulos) cambios[`historias/${push(historias).key}`] = { titulo }
+  for (const titulo of titulos) cambios[`historias/${push(historias).key}`] = { titulo, tipo }
   return update(refSala(id), cambios)
 }
 

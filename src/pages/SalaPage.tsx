@@ -6,6 +6,9 @@ import Resumen from '../Resumen'
 import {
   COMODINES,
   MAZOS,
+  SIN_TIPO,
+  TIPOS_ITEM,
+  TIPO_OTRO,
   MAZO_INICIAL,
   agregarHistorias,
   cambiarEspectador,
@@ -42,6 +45,10 @@ export default function SalaPage() {
 
   const [estuvoAbierta, setEstuvoAbierta] = useState(false)
   const [avisoDescartado, setAvisoDescartado] = useState(false)
+  const [tipoItem, setTipoItem] = useState(TIPOS_ITEM[0])
+  const [otroTipo, setOtroTipo] = useState('')
+  // Con «Otro» el tipo queda como «Otro: …»; vacío mientras no se escriba cuál.
+  const tipoElegido = tipoItem === TIPO_OTRO ? (otroTipo.trim() ? `${TIPO_OTRO}: ${otroTipo.trim()}` : '') : tipoItem
   const cajaHistorias = useRef<HTMLTextAreaElement>(null)
 
   const existe = !!sala
@@ -156,7 +163,7 @@ export default function SalaPage() {
         />
         {soyModerador && (
           <section className="acciones">
-            <button onClick={seguirEstimando}>Estimar más historias</button>
+            <button onClick={seguirEstimando}>Estimar más ítems</button>
             <button className="peligro" onClick={() => void cerrarSala(id)}>
               Cerrar sala
             </button>
@@ -189,8 +196,8 @@ export default function SalaPage() {
       .split('\n')
       .map((t) => t.trim().slice(0, 200))
       .filter(Boolean)
-    if (!titulos.length) return
-    void agregarHistorias(id, titulos)
+    if (!titulos.length || !tipoElegido) return
+    void agregarHistorias(id, titulos, tipoElegido)
     setNuevasHistorias('')
   }
 
@@ -203,11 +210,11 @@ export default function SalaPage() {
         <div className="despedida" role="dialog" aria-modal="true" aria-labelledby="aviso-titulo">
           <div className="despedida-tarjeta">
             <p id="aviso-titulo" className="despedida-titulo">
-              Todas las historias están estimadas
+              Todos los ítems de backlog están estimados
             </p>
-            <p className="bajada">¿Quieres estimar más historias o ver el resumen de la sesión?</p>
+            <p className="bajada">¿Quieres estimar más ítems o ver el resumen de la sesión?</p>
             <div className="acciones">
-              <button onClick={seguirEstimando}>Estimar más historias</button>
+              <button onClick={seguirEstimando}>Estimar más ítems</button>
               <button className="primario" autoFocus onClick={() => void mostrarResumen(id, true)}>
                 Ver resumen
               </button>
@@ -218,10 +225,11 @@ export default function SalaPage() {
 
       <section className="tarjeta">
         <div className="titulo-seccion">
-          <span className="etiqueta">Historia en estimación</span>
+          <span className="etiqueta">Ítem de backlog en estimación</span>
           <span className="etiqueta">Mazo: {MAZOS[sala.mazo ?? MAZO_INICIAL].nombre}</span>
         </div>
-        <p className="historia">{actual ? actual.titulo : 'Ronda libre, sin historia asignada.'}</p>
+        <p className="historia">{actual ? actual.titulo : 'Ronda libre, sin ítem asignado.'}</p>
+        {actual && <small className="historia-tipo">{actual.tipo ?? SIN_TIPO}</small>}
       </section>
 
       <section className="mesa">
@@ -290,7 +298,7 @@ export default function SalaPage() {
           </ul>
           {actualId && actual && (
             <div className="estimacion-final">
-              <span className="etiqueta">Estimación final de la historia</span>
+              <span className="etiqueta">Estimación final del ítem</span>
               <div className="mazo">
                 {cartas
                   .filter((carta) => !COMODINES.includes(carta))
@@ -333,10 +341,10 @@ export default function SalaPage() {
               )}
               {siguiente && (!actual || actual.estimacion) && (
                 <button className="primario" onClick={() => void estimarHistoria(id, siguiente[0])}>
-                  Siguiente historia
+                  Siguiente ítem
                 </button>
               )}
-              {!siguiente && actual?.estimacion && <p className="bajada">Todas las historias están estimadas.</p>}
+              {!siguiente && actual?.estimacion && <p className="bajada">Todos los ítems están estimados.</p>}
             </>
           ) : (
             <button className="primario" disabled={votosVisibles.length === 0} onClick={() => void revelar(id)}>
@@ -371,18 +379,21 @@ export default function SalaPage() {
 
       <section className="tarjeta">
         <div className="titulo-seccion">
-          <span className="etiqueta">Historias ({historias.length})</span>
+          <span className="etiqueta">Ítems de backlog ({historias.length})</span>
           {total !== null && <span className="etiqueta">Total estimado: {total}</span>}
         </div>
         {historias.length === 0 && (
           <p className="bajada">
-            {soyModerador ? 'Agrega historias para estimarlas en orden.' : 'Quien modera aún no agrega historias.'}
+            {soyModerador ? 'Agrega ítems de backlog para estimarlos en orden.' : 'Quien modera aún no agrega ítems.'}
           </p>
         )}
         <ul className="historias">
           {historias.map(([hid, h]) => (
             <li key={hid} className={hid === actualId ? 'actual' : undefined}>
-              <span className="historia-titulo">{h.titulo}</span>
+              <span className="historia-titulo">
+                {h.titulo}
+                <small className="historia-tipo">{h.tipo ?? SIN_TIPO}</small>
+              </span>
               <span className="insignia">{h.estimacion ?? '–'}</span>
               {soyModerador && (
                 <span className="fila">
@@ -403,17 +414,37 @@ export default function SalaPage() {
         </ul>
         {soyModerador && (
           <form className="agregar" onSubmit={agregar}>
-            <textarea
-              ref={cajaHistorias}
-              rows={2}
-              value={nuevasHistorias}
-              placeholder="Nuevas historias, una por línea"
-              aria-label="Nuevas historias, una por línea"
-              onChange={(e) => setNuevasHistorias(e.target.value)}
-            />
-            <button type="submit" disabled={!nuevasHistorias.trim()}>
-              Agregar
-            </button>
+            <div className="agregar-tipo">
+              <label htmlFor="tipo-item">Tipo de ítem de backlog</label>
+              <select id="tipo-item" value={tipoItem} onChange={(e) => setTipoItem(e.target.value)}>
+                {TIPOS_ITEM.map((tipo) => (
+                  <option key={tipo}>{tipo}</option>
+                ))}
+              </select>
+              {tipoItem === TIPO_OTRO && (
+                <input
+                  autoFocus
+                  value={otroTipo}
+                  maxLength={60}
+                  placeholder="¿Cuál?"
+                  aria-label="¿Cuál otro tipo de ítem?"
+                  onChange={(e) => setOtroTipo(e.target.value)}
+                />
+              )}
+            </div>
+            <div className="agregar-items">
+              <textarea
+                ref={cajaHistorias}
+                rows={2}
+                value={nuevasHistorias}
+                placeholder="Nuevos ítems, uno por línea"
+                aria-label="Nuevos ítems, uno por línea"
+                onChange={(e) => setNuevasHistorias(e.target.value)}
+              />
+              <button type="submit" disabled={!nuevasHistorias.trim() || !tipoElegido}>
+                Agregar
+              </button>
+            </div>
           </form>
         )}
       </section>
