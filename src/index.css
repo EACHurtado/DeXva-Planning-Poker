@@ -657,23 +657,56 @@ button.peligro {
   font-size: 1.6rem;
 }
 
-/* Los seis indicadores van en una sola fila; en pantallas angostas se reparten en filas iguales. */
+/* El resumen usa más ancho que la sala para que los siete indicadores quepan en una fila. */
+.sala.con-resumen {
+  max-width: 1120px;
+}
+
+/* Mediana y P85 llevan un análisis debajo, así que reciben columnas más anchas. */
 .indicadores {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr)) repeat(2, minmax(0, 1.9fr));
   gap: 10px;
 }
 
-@media (max-width: 760px) {
+/* En pantallas angostas: tres cifras por fila, luego dos, y los dos análisis lado a lado. */
+@media (max-width: 860px) {
   .indicadores {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .indicador {
+    grid-column: span 3;
+  }
+
+  .indicador:nth-child(-n + 3) {
+    grid-column: span 2;
   }
 }
 
-@media (max-width: 420px) {
-  .indicadores {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 480px) {
+  .indicador:nth-child(n) {
+    grid-column: span 3;
   }
+
+  .indicador:nth-child(1),
+  .indicador:nth-child(n + 6) {
+    grid-column: span 6;
+  }
+}
+
+.lectura {
+  border-left: 3px solid var(--oro);
+}
+
+.lectura p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.lectura p:first-of-type {
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
 .indicador {

@@ -16,7 +16,7 @@ const MARGEN = { arriba: 14, derecha: 16, abajo: 26, izquierda: 34 }
 // Separación entre líneas de referencia que caen sobre la misma carta.
 const DESFASE = 3
 
-/** Tablero de cierre: cifras de la sesión, evolución de las estimaciones y su detalle. */
+/** Tablero de cierre: cifras de la sesión, lectura para el equipo, evolución y detalle. */
 export default function Resumen({ historias, cartas, participantes }: Props) {
   const [activo, setActivo] = useState<number | null>(null)
 
@@ -34,11 +34,36 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
   const porNivel = [...estimadas].sort((a, b) => a.nivel - b.nivel)
   const masBaja = porNivel[0]
   const masAlta = porNivel[porNivel.length - 1]
-  // Percentil 85 por rango más cercano: la carta más baja que cubre al 85 % de los ítems.
-  const p85 = porNivel.length ? porNivel[Math.ceil(0.85 * porNivel.length) - 1] : undefined
 
-  // Solo tiene sentido en mazos numéricos: cuánto menor es la más baja respecto de la más alta.
+  // Los cálculos usan el valor de la carta, o su posición si el mazo no es numérico (tallas).
   const numerico = escala.every((c) => !Number.isNaN(Number(c)))
+  const medida = (nivel: number) => (numerico ? Number(escala[nivel]) : nivel)
+  const datos = porNivel.map((h) => medida(h.nivel))
+
+  /**
+   * Percentil por interpolación lineal, k = p·(n − 1) + 1, redondeado a entero
+   * y llevado a la carta más cercana del mazo (en un empate, la más alta).
+   */
+  function percentil(p: number): number | null {
+    if (!datos.length) return null
+    const k = p * (datos.length - 1)
+    const abajo = Math.floor(k)
+    const arriba = Math.ceil(k)
+    const exacto = Math.round(datos[abajo] + (k - abajo) * (datos[arriba] - datos[abajo]))
+    let nivel = 0
+    escala.forEach((_, i) => {
+      if (Math.abs(medida(i) - exacto) <= Math.abs(medida(nivel) - exacto)) nivel = i
+    })
+    return nivel
+  }
+
+  const nivelMediana = percentil(0.5)
+  const nivelP85 = percentil(0.85)
+  const mediana = nivelMediana === null ? null : escala[nivelMediana]
+  const p85 = nivelP85 === null ? null : escala[nivelP85]
+  // «5 puntos» en mazos numéricos; solo la carta («M») en los demás.
+  const conUnidad = (carta: string) => (numerico ? `${carta} ${carta === '1' ? 'punto' : 'puntos'}` : carta)
+
   let variabilidad = '–'
   if (numerico && masAlta && masBaja) {
     const alto = Number(masAlta.valor)
@@ -50,6 +75,40 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
   const tipos = [...conteo].sort((a, b) => b[1] - a[1])
   const mayorTipo = Math.max(1, ...tipos.map(([, n]) => n))
 
+  // Lectura para el equipo: frases armadas según lo que muestran los datos.
+  const lectura: string[] = []
+  if (mediana !== null && p85 !== null && nivelMediana !== null && nivelP85 !== null && masAlta && masBaja) {
+    if (masAlta.nivel === masBaja.nivel) {
+      lectura.push(`Todos los ítems se estimaron en ${conUnidad(mediana)}: es un lote muy parejo, sin ítems que se salgan del resto.`)
+    } else {
+      lectura.push(
+        `El tamaño típico de los ítems fue de ${conUnidad(mediana)}, y el 85 % de la carga se concentró hasta ${conUnidad(p85)}.`,
+      )
+      const brecha = nivelP85 - nivelMediana
+      if (brecha >= 2) {
+        lectura.push(
+          `La distancia entre lo típico y lo complejo es amplia (${mediana} frente a ${p85}): el lote mezcla ítems pequeños con otros bastante más grandes.`,
+        )
+      } else if (brecha === 1) {
+        lectura.push(`Lo complejo queda solo un escalón por encima de lo típico (${mediana} frente a ${p85}): el lote es razonablemente homogéneo.`)
+      } else {
+        lectura.push(`La mediana y el P85 coinciden en ${p85}: la mayoría de los ítems tiene un tamaño similar.`)
+      }
+      const sobreP85 = estimadas.filter((h) => h.nivel > nivelP85)
+      if (sobreP85.length === 1) {
+        lectura.push(
+          `«${sobreP85[0].titulo}» (${sobreP85[0].valor}) quedó por encima de ese límite: es el valor atípico del lote y un buen candidato a dividirse o a revisarse antes de comprometerlo.`,
+        )
+      } else if (sobreP85.length > 1) {
+        lectura.push(
+          `${sobreP85.length} ítems superan ese límite (${sobreP85.map((h) => `«${h.titulo}»: ${h.valor}`).join(', ')}): conviene revisarlos o dividirlos antes de comprometerlos.`,
+        )
+      }
+    }
+    if (tipos.length > 1) lectura.push(`El tipo más frecuente fue ${tipos[0][0]}, con ${tipos[0][1]} de ${estimadas.length} ítems.`)
+    if (estimadas.length < 4) lectura.push(`Con solo ${estimadas.length} ${estimadas.length === 1 ? 'ítem estimado' : 'ítems estimados'}, estas cifras son orientativas.`)
+  }
+
   const anchoTrazo = ANCHO - MARGEN.izquierda - MARGEN.derecha
   const altoTrazo = ALTO - MARGEN.arriba - MARGEN.abajo
   const x = (i: number) => MARGEN.izquierda + (estimadas.length > 1 ? (i / (estimadas.length - 1)) * anchoTrazo : anchoTrazo / 2)
@@ -57,14 +116,14 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
   const puntoActivo = activo === null ? undefined : estimadas[activo]
 
   const referencias = [
-    { clave: 'alto', nombre: 'Más alta', punto: masAlta },
-    { clave: 'p85', nombre: 'P85', punto: p85 },
-    { clave: 'bajo', nombre: 'Más baja', punto: masBaja },
-  ].flatMap((r) => (r.punto ? [{ ...r, punto: r.punto }] : []))
+    { clave: 'alto', nombre: 'Más alta', nivel: masAlta?.nivel },
+    { clave: 'p85', nombre: 'P85', nivel: nivelP85 ?? undefined },
+    { clave: 'bajo', nombre: 'Más baja', nivel: masBaja?.nivel },
+  ].flatMap((r) => (r.nivel === undefined ? [] : [{ ...r, nivel: r.nivel }]))
   // Si varias referencias coinciden en una carta se separan unos píxeles para que se vean todas.
   const yReferencia = (indice: number) => {
-    const nivel = referencias[indice].punto.nivel
-    const iguales = referencias.map((r, i) => (r.punto.nivel === nivel ? i : -1)).filter((i) => i !== -1)
+    const nivel = referencias[indice].nivel
+    const iguales = referencias.map((r, i) => (r.nivel === nivel ? i : -1)).filter((i) => i !== -1)
     return y(nivel) + (iguales.indexOf(indice) - (iguales.length - 1) / 2) * DESFASE
   }
 
@@ -82,8 +141,30 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
           valor={variabilidad}
           detalle={masAlta && masBaja ? `entre ${masBaja.valor} y ${masAlta.valor}` : undefined}
         />
-        <Indicador etiqueta="P85" valor={p85?.valor ?? '–'} detalle={p85 ? `85 % de los ítems en ${p85.valor} o menos` : undefined} />
+        <Indicador
+          etiqueta="Mediana (valor central)"
+          valor={mediana ?? '–'}
+          detalle={
+            mediana
+              ? `El 50 % de los ítems se estimó en ${conUnidad(mediana)} o menos. Es el tamaño típico y no se distorsiona con valores atípicos.`
+              : undefined
+          }
+        />
+        <Indicador
+          etiqueta="P85 (límite superior)"
+          valor={p85 ?? '–'}
+          detalle={p85 ? `El 85 % de los ítems quedó en ${conUnidad(p85)} o menos. Muestra el tamaño de los ítems complejos.` : undefined}
+        />
       </section>
+
+      {lectura.length > 0 && (
+        <section className="tarjeta lectura">
+          <span className="etiqueta">Lectura para el equipo</span>
+          {lectura.map((frase) => (
+            <p key={frase}>{frase}</p>
+          ))}
+        </section>
+      )}
 
       {tipos.length > 0 && (
         <section className="tarjeta">
@@ -117,7 +198,7 @@ export default function Resumen({ historias, cartas, participantes }: Props) {
                 <svg viewBox="0 0 28 8" aria-hidden="true">
                   <line className={`grafico-ref ref-${r.clave}`} x1="1" x2="27" y1="4" y2="4" />
                 </svg>
-                {r.nombre}: <strong>{r.punto.valor}</strong>
+                {r.nombre}: <strong>{escala[r.nivel]}</strong>
               </li>
             ))}
           </ul>

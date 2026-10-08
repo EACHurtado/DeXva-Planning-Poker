@@ -154,7 +154,7 @@ export default function SalaPage() {
 
   if (sala.resumen) {
     return (
-      <main className="sala">
+      <main className="sala con-resumen">
         {encabezado}
         <Resumen
           historias={historias.map(([, h]) => h)}
