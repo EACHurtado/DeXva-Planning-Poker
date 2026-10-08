@@ -2,7 +2,9 @@
 
 Planning poker gratuito para estimar en equipo, en tiempo real y sin registro.
 
-Sitio: https://eachurtado.github.io/DeXva-Planning-Poker/
+Sitio: https://herramientas.dexvagroup.com/planning-poker/
+
+El dominio lo aporta el repositorio `EACHurtado.github.io`; este se sirve en la ruta que lleva su nombre, así que renombrarlo cambia la dirección.
 
 ## Cómo funciona
 
